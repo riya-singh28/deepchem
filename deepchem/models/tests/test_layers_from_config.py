@@ -1,4 +1,6 @@
+#%%
 import os
+import sys
 import unittest
 import deepchem as dc
 import numpy as np
@@ -10,7 +12,7 @@ try:
 except:
     has_tensorflow = False
 
-
+#%%
 @pytest.mark.tensorflow
 def test_interatomic_l2_distance():
     N_atoms = 10
@@ -504,7 +506,7 @@ def test_message_passing():
     assert layer_copied.update_fn == layer.update_fn
     assert layer_copied.n_hidden == layer.n_hidden
 
-
+#%%
 @pytest.mark.tensorflow
 def test_edge_network():
     n_pair_features = 8
@@ -513,11 +515,23 @@ def test_edge_network():
     layer = dc.models.layers.EdgeNetwork(n_pair_features, n_hidden, init)
     config = layer.get_config()
     layer_copied = dc.models.layers.EdgeNetwork.from_config(config)
-
+    
     assert layer_copied.n_pair_features == layer.n_pair_features
     assert layer_copied.n_hidden == layer.n_hidden
     assert layer_copied.init == layer.init
+    return layer
+    tf.print(layer, output_stream=sys.stderr)
+#%%
 
+# t = test_edge_network()
+# print(t)
+init = 'glorot_uniform'
+x = tf.ones((2, 2))
+linear_layer = dc.models.layers.EdgeNetwork(4, 2, init)
+y = linear_layer(x)
+print(y)
+
+#%%
 
 @pytest.mark.tensorflow
 def test_gru():
@@ -530,7 +544,9 @@ def test_gru():
     assert layer_copied.n_hidden == layer.n_hidden
     assert layer_copied.init == layer.init
 
-
+#%%
+t = test_gru()
+#%%
 @pytest.mark.tensorflow
 def test_set_gather():
     M = 10

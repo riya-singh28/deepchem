@@ -1,3 +1,5 @@
+#%%
+
 import deepchem as dc
 import numpy as np
 import pytest
@@ -17,7 +19,7 @@ try:
 except ModuleNotFoundError:
     has_torch = False
 
-
+#%%
 @pytest.mark.tensorflow
 def test_cosine_dist():
     """Test invoking cosine_dist."""
@@ -746,7 +748,7 @@ def test_mat_generator():
     output_ar = torch.tensor([-1.4436])
     assert torch.allclose(result, output_ar, rtol=1e-4)
 
-
+#%%
 @pytest.mark.torch
 def test_dmpnn_encoder_layer():
     """Test invoking DMPNNEncoderLayer."""
@@ -781,7 +783,10 @@ def test_dmpnn_encoder_layer():
     assert output.shape == torch.Size([1, 2 + 2048])
     assert torch.allclose(output[0][:2], readout_output, atol=1e-4)
 
+#%%
+t = test_dmpnn_encoder_layer()
 
+#%%
 @pytest.mark.torch
 def test_torch_interatomic_l2_distances():
     """Test Invoking the torch equivalent of InteratomicL2Distances"""

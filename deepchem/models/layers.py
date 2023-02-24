@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#%%
 import tensorflow as tf
 import numpy as np
 from collections.abc import Sequence as SequenceCollection
@@ -6,7 +7,7 @@ from typing import Optional, Callable, Dict, List, Tuple
 from tensorflow.keras import activations, initializers, backend
 from tensorflow.keras.layers import Dropout, BatchNormalization, Dense, Activation
 
-
+#%%
 class InteratomicL2Distances(tf.keras.layers.Layer):
     """Compute (squared) L2 Distances between atoms given neighbors.
 
@@ -2103,7 +2104,7 @@ class AlphaShareLayer(tf.keras.layers.Layer):
         out_tensors = []
         tmp_tensor = []
         for row in range(n_alphas):
-            tmp_tensor.append(tf.reshape(subspaces[row,], [-1, subspace_size]))
+            tmp_tensor.append(tf.reshape(subspaces[row, ], [-1, subspace_size]))
             count += 1
             if (count == 2):
                 out_tensors.append(tf.concat(tmp_tensor, 1))
@@ -3705,11 +3706,18 @@ class MessagePassing(tf.keras.layers.Layer):
         else:
             out = atom_features
         for i in range(self.T):
+            print("aryan")
+            print(pair_features.shape, out.shape, atom_to_pair.shape)
             message = self.message_function([pair_features, out, atom_to_pair])
+            print("madame")
+            print(message.shape)
             out = self.update_function([out, message])
+            print("cuite")
+            print(out.shape)
         return out
-
-
+#%%
+import tensorflow as tf
+from tensorflow.keras import activations, initializers, backend
 class EdgeNetwork(tf.keras.layers.Layer):
     """ Submodule for Message Passing """
 
@@ -3741,17 +3749,47 @@ class EdgeNetwork(tf.keras.layers.Layer):
         n_pair_features = self.n_pair_features
         n_hidden = self.n_hidden
         self.W = init([n_pair_features, n_hidden * n_hidden])
-        self.b = backend.zeros(shape=(n_hidden * n_hidden,))
+        print(self.W.shape)
+        self.b = tf.zeros(shape=(n_hidden * n_hidden,), dtype=tf.dtypes.float32)
+        print(self.b.shape)
         self.built = True
 
     def call(self, inputs):
         pair_features, atom_features, atom_to_pair = inputs
-        A = tf.nn.bias_add(tf.matmul(pair_features, self.W), self.b)
+        print(pair_features.shape)
+        print(self.W.shape)
+        print(self.b.shape)
+        p = tf.matmul(pair_features, self.W)
+        print(p.shape)
+        A = tf.nn.bias_add(p, self.b)
+        print(A)
         A = tf.reshape(A, (-1, self.n_hidden, self.n_hidden))
+        print(A)
         out = tf.expand_dims(tf.gather(atom_features, atom_to_pair[:, 1]), 2)
+        print(out)
         out = tf.squeeze(tf.matmul(A, out), axis=2)
+        print(out)
+        print("hello")
+        t = tf.math.segment_sum(out, atom_to_pair[:, 0])
+        print(t)
+        print(tf.math.segment_sum(out, atom_to_pair[:, 0]))
         return tf.math.segment_sum(out, atom_to_pair[:, 0])
 
+#%%
+pair_features = tf.random.uniform(shape=[86835, 14])
+atom_features = tf.random.uniform(shape=[2945, 75])
+atom_to_pair = tf.random.uniform(shape=[86835, 2])
+inputs = [pair_features, atom_features, atom_to_pair]
+
+n_pair_features = 14
+n_hidden = 75
+init = 'glorot_uniform'
+layer = EdgeNetwork(n_pair_features, n_hidden, init)
+t = layer(inputs)
+print("riya")
+print(t.shape)
+
+#%%
 
 class GatedRecurrentUnit(tf.keras.layers.Layer):
     """ Submodule for Message Passing """
@@ -3769,13 +3807,12 @@ class GatedRecurrentUnit(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         n_hidden = self.n_hidden
-
         def init(input_shape):
             return self.add_weight(name='kernel',
                                    shape=(input_shape[0], input_shape[1]),
                                    initializer=self.init,
                                    trainable=True)
-
+        
         self.Wz = init([n_hidden, n_hidden])
         self.Wr = init([n_hidden, n_hidden])
         self.Wh = init([n_hidden, n_hidden])
@@ -3788,15 +3825,20 @@ class GatedRecurrentUnit(tf.keras.layers.Layer):
         self.built = True
 
     def call(self, inputs):
+        print("mumma")
+        print(inputs[0].shape, inputs[1].shape)
         z = tf.nn.sigmoid(
             tf.matmul(inputs[1], self.Wz) + tf.matmul(inputs[0], self.Uz) +
             self.bz)
+        print(z.shape)
         r = tf.nn.sigmoid(
             tf.matmul(inputs[1], self.Wr) + tf.matmul(inputs[0], self.Ur) +
             self.br)
+        print(r.shape)
         h = (1 - z) * tf.nn.tanh(
             tf.matmul(inputs[1], self.Wh) + tf.matmul(inputs[0] * r, self.Uh) +
             self.bh) + z * inputs[0]
+        print(h.shape)
         return h
 
 

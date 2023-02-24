@@ -1,3 +1,4 @@
+#%%
 import unittest
 import os
 import numpy as np
@@ -16,10 +17,10 @@ try:
 except:
     has_tensorflow = False
 
-from flaky import flaky
+#from flaky import flaky
+#%%
 
-
-@pytest.mark.tensorflow
+# @pytest.mark.tensorflow
 def get_dataset(mode='classification', featurizer='GraphConv', num_tasks=2):
     data_points = 20
     if mode == 'classification':
@@ -45,7 +46,7 @@ def get_dataset(mode='classification', featurizer='GraphConv', num_tasks=2):
     ds = NumpyDataset(train.X[:data_points], y, w, train.ids[:data_points])
 
     return tasks, ds, transformers, metric
-
+# %%
 
 @flaky
 @pytest.mark.tensorflow
@@ -256,7 +257,7 @@ def test_dag_regression_uncertainty():
     assert mean_error < .7 * mean_value
     assert mean_std > 0.5 * mean_error
     assert mean_std < mean_value
-
+#%%
 
 @pytest.mark.slow
 @pytest.mark.tensorflow
@@ -277,6 +278,10 @@ def test_mpnn_model():
     scores = model.evaluate(dataset, [metric], transformers)
     assert scores['mean-roc_auc_score'] >= 0.9
 
+    
+#%%
+test_mpnn = test_mpnn_model()
+#%%
 
 @pytest.mark.slow
 @pytest.mark.tensorflow
@@ -297,9 +302,10 @@ def test_mpnn_regression_model():
     scores = model.evaluate(dataset, [metric], transformers)
     assert scores['mean_absolute_error'] < 0.1
 
-
-@pytest.mark.slow
-@pytest.mark.tensorflow
+#%%
+# @pytest.mark.slow
+# @pytest.mark.tensorflow
+#%%
 def test_mpnn_regression_uncertainty():
     tasks, dataset, transformers, metric = get_dataset('regression', 'Weave')
 
@@ -325,8 +331,9 @@ def test_mpnn_regression_uncertainty():
     assert mean_error < 0.5 * mean_value
     assert mean_std > 0.5 * mean_error
     assert mean_std < mean_value
-
-
+#%%
+test_mpnn_regression_uncertainty()
+#%%
 @flaky
 @pytest.mark.tensorflow
 def test_dtnn_regression_model():
